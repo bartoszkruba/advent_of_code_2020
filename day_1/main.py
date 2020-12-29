@@ -1,5 +1,5 @@
 inputs = []
-for line in open('puzle_input.txt'):
+for line in open('puzzle_inputs.txt'):
     inputs.append(int(line))
 
 
