@@ -37,7 +37,7 @@ def find_solution1(forms):
 print("Part one solution: ", find_solution1(forms))
 
 
-def find_solution2(form):
+def find_solution2(forms):
     count = 0
 
     for form in forms:
