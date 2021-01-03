@@ -19,7 +19,32 @@ def parse_rules(inputs):
 
             split = rule.split(' ')
             number = split[0]
-            color = split[1] + split[2]
+            color = split[1] + ' ' + split[2]
             rules[bag].append((number, color))
 
+    return rules
 
+
+def can_contain(rules, bag, color):
+    if len(rules[bag]) == 0:
+        return False
+
+    for rule in rules[bag]:
+        if rule[1] == color:
+            return True
+        elif can_contain(rules, rule[1], color):
+            return True
+    return False
+
+
+def find_solution1(rules):
+    count = 0
+    for bag in rules:
+        if bag != 'shiny gold' and can_contain(rules, bag, 'shiny gold'):
+            count += 1
+    return count
+
+
+rules = parse_rules(inputs)
+
+print('Part one solution:', find_solution1(rules))
