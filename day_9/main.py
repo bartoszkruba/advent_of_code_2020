@@ -17,4 +17,19 @@ def find_solution1(inputs):
             return number
 
 
-print('Part one solution:', find_solution1(inputs))
+def find_solution2(inputs, target):
+    for i in range(len(inputs)):
+        for j in range(i + 1, len(inputs)):
+            list = inputs[i:j + 1]
+            s = sum(list)
+            if s > target:
+                break
+            elif s == target:
+                list.sort()
+                return list[0] + list[len(list) - 1]
+
+
+solution1 = find_solution1(inputs)
+print('Part one solution:', solution1)
+
+print(find_solution2(inputs, solution1))
