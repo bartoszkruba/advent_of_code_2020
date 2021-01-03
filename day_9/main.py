@@ -32,4 +32,4 @@ def find_solution2(inputs, target):
 solution1 = find_solution1(inputs)
 print('Part one solution:', solution1)
 
-print(find_solution2(inputs, solution1))
+print('Part two solution:', find_solution2(inputs, solution1))
