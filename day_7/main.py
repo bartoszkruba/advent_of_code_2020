@@ -37,6 +37,17 @@ def can_contain(rules, bag, color):
     return False
 
 
+def bag_count(rules, bag):
+    count = 0
+    if len(rules[bag]) == 0:
+        return count
+
+    for rule in rules[bag]:
+        count += int(rule[0])
+        count += int(rule[0]) * bag_count(rules, rule[1])
+    return count
+
+
 def find_solution1(rules):
     count = 0
     for bag in rules:
@@ -45,6 +56,12 @@ def find_solution1(rules):
     return count
 
 
+def find_solution2(rules):
+    return bag_count(rules, 'shiny gold')
+
+
 rules = parse_rules(inputs)
 
 print('Part one solution:', find_solution1(rules))
+
+print('Part two solution:', find_solution2(rules))
