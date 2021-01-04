@@ -2,7 +2,7 @@ with open('puzzle_inputs.txt') as f:
     inputs = [line.replace('\n', '') for line in f]
 
 
-def adjacent_seats(coordinates, pattern):
+def adjacent_seats_version1(coordinates, pattern):
     count = 0
     for check in [(-1, -1), (-1, 0), (0, -1), (1, -1), (-1, 1), (1, 1), (0, 1), (1, 0)]:
         y = coordinates[0] + check[0]
@@ -11,6 +11,25 @@ def adjacent_seats(coordinates, pattern):
             continue
         if pattern[y][x] == '#':
             count += 1
+
+    return count
+
+
+def adjacent_seats_version2(coordinates, pattern):
+    count = 0
+    for check in [(-1, -1), (-1, 0), (0, -1), (1, -1), (-1, 1), (1, 1), (0, 1), (1, 0)]:
+        temp = [coordinates[0], coordinates[1]]
+        while True:
+            temp[0] += check[0]
+            temp[1] += check[1]
+            y = temp[0]
+            x = temp[1]
+            if y < 0 or y >= len(pattern) or x < 0 or x >= len(pattern[0]):
+                break
+
+            if pattern[y][x] != '.':
+                count += 1 if pattern[y][x] == '#' else 0
+                break
 
     return count
 
@@ -31,7 +50,7 @@ def count_seats(pattern):
     return count
 
 
-def find_solution1(inputs):
+def simulation(inputs, algorithm, limit):
     old_pattern = inputs
     new_pattern = ['' for _ in old_pattern]
 
@@ -43,11 +62,11 @@ def find_solution1(inputs):
                     new_pattern[i] += letter
                     continue
 
-                neighbors = adjacent_seats((i, j), old_pattern)
+                neighbors = algorithm((i, j), old_pattern)
                 if letter == 'L':
                     new_pattern[i] += '#' if neighbors == 0 else 'L'
                 else:
-                    new_pattern[i] += 'L' if neighbors >= 4 else '#'
+                    new_pattern[i] += 'L' if neighbors >= limit else '#'
 
         if patterns_equal(new_pattern, old_pattern):
             break
@@ -55,4 +74,15 @@ def find_solution1(inputs):
         new_pattern = ['' for _ in old_pattern]
     return count_seats(new_pattern)
 
-print("Part one solution: ", find_solution1())
+
+def find_solution1(inputs):
+    return simulation(inputs, adjacent_seats_version1, 4)
+
+
+def find_solution2(inputs):
+    return simulation(inputs, adjacent_seats_version2, 5)
+
+
+print("Part one solution: ", find_solution1(inputs))
+
+print("Part two solution: ", find_solution2(inputs))
