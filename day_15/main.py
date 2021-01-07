@@ -5,7 +5,7 @@ with open('puzzle_inputs.txt') as f:
             inputs.append(int(number.replace('\n', '')))
 
 
-def find_solution1(inputs):
+def find_solution(inputs, day_number):
     # number spoken -> last turn the number was spoken
     numbers = {}
     last_spoken = None
@@ -17,7 +17,7 @@ def find_solution1(inputs):
         last_spoken = number
         i += 1
 
-    while i < 2020:
+    while i < day_number:
         last_turn = i - 1
         if last_spoken not in numbers:
             new_last_spoken = 0
@@ -31,4 +31,5 @@ def find_solution1(inputs):
     return last_spoken
 
 
-print('Part one solution:', find_solution1(inputs))
+print('Part one solution:', find_solution(inputs, 2020))
+print('Part two solution:', find_solution(inputs, 30000000))
