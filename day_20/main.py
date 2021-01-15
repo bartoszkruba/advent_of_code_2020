@@ -1,6 +1,6 @@
 tiles = {}
 
-with open('puzzle_inputs.txt') as f:
+with open('test_inputs.txt') as f:
     tile_id = None
     tile = []
 
@@ -108,21 +108,70 @@ def find_matches(combinations):
 
 def find_solution1(tiles):
     ids = set()
+    combinations = tile_combinations(tiles)
+    matches = find_matches(combinations)
 
-    for key, value in find_matches(tile_combinations(tiles)).items():
+    for key, value in matches.items():
         match_top = 1 if len(value['top']) > 0 else 0
         match_right = 1 if len(value['right']) > 0 else 0
         match_bottom = 1 if len(value['bottom']) > 0 else 0
         match_left = 1 if len(value['left']) > 0 else 0
 
         if match_top + match_right + match_bottom + match_left == 2:
-            ids.add(int(key.split('|')[0])
-                    )
+            ids.add(key)
+
+    filtered_ids = set()
+    for id in ids:
+        filtered_ids.add(int(id.split('|')[0]))
 
     answer = 1
-    for id in ids:
+    for id in filtered_ids:
         answer *= id
+
     return answer
 
 
-print('Part One Solution:', find_solution1(tiles))
+# print('Part One Solution:', find_solution1(tiles))
+
+
+def find(ids, id):
+    found = []
+
+    for key, matches in ids.items():
+        if str(id) in key:
+            found.append(matches)
+    return found
+
+
+ids = set()
+combinations = tile_combinations(tiles)
+matches = find_matches(combinations)
+
+for key, value in matches.items():
+    match_top = 1 if len(value['top']) > 0 else 0
+    match_right = 1 if len(value['right']) > 0 else 0
+    match_bottom = 1 if len(value['bottom']) > 0 else 0
+    match_left = 1 if len(value['left']) > 0 else 0
+
+    if match_top + match_right + match_bottom + match_left == 2:
+        ids.add(key)
+
+filtered_ids = set()
+for id in ids:
+    filtered_ids.add(int(id.split('|')[0]))
+
+for id in filtered_ids:
+    print('id')
+    for x in find(matches, id):
+        z = []
+        if len(x['top']) > 0:
+            z.append('top')
+        if len(x['right']) > 0:
+            z.append('right')
+        if len(x['bottom']) > 0:
+            z.append('bottom')
+        if len(x['left']) > 0:
+            z.append('left')
+        print(z)
+
+answer = 1
