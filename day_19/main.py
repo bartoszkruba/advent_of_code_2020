@@ -59,33 +59,25 @@ def replace_rules(str, rules):
     return arr
 
 
-def find_solution1(rules, messages):
-    s = {rules['0']}
-    while True:
-        count = 0
-        new_s = set()
-        for s1 in s:
-            for s2 in replace_rules(s1, rules):
-                count += 1
-                new_s.add(s2)
-        if s == new_s:
-            break
-        s = new_s
-
-    arr = []
-    for i in s:
-        arr.append(i.replace('"', '').replace(' ', ''))
-
-    filtered_messages = []
-
+def find_solution1(messages, first_part_rules, second_part_rules):
+    counter = 0
     for message in messages:
-        if message in arr:
-            filtered_messages.append(message)
+        if good_message_part1(message, first_part_rules, second_part_rules):
+            counter += 1
 
-    return len(filtered_messages), filtered_messages
+    return counter
 
 
-def x(rules, rule_start):
+def find_solution2(messages, first_part_rules, second_part_rules):
+    counter = 0
+    for message in messages:
+        if good_message_part2(message, first_part_rules, second_part_rules):
+            counter += 1
+
+    return counter
+
+
+def generate_rules(rules, rule_start):
     arr = [rules[rule_start]]
     while True:
         count = 0
@@ -104,37 +96,30 @@ def x(rules, rule_start):
     return arr
 
 
-# answer, filtered_messages = find_solution1(rules, messages)
-# print('Part One Solution:', answer)
+def good_message_part1(message, first_part_rules, second_part_rules):
+    p_len = len(list(first_part_rules)[0])
 
-# rules['8'] = '42 | 42 8'
-# rules['11'] = '42 31 | 42 11 31'
+    if len(message) != 3 * p_len:
+        return False
 
-# rule 0 = 8, 11 = x1 * 42, x2 * 42 + x2 * 31
+    start = message[:p_len]
+    middle = message[p_len: 2 * p_len]
+    end = message[2 * p_len: 3 * p_len]
 
-rule_42_combinations = set()
-rule_31_combinations = set()
-
-for rule in x(rules, '42'):
-    for n in rule.split('|'):
-        rule_42_combinations.add(n)
-
-for rule in x(rules, '31'):
-    for n in rule.split('|'):
-        rule_31_combinations.add(n)
+    return start in first_part_rules and middle in first_part_rules and end in second_part_rules
 
 
-def good_message(message, rules_42, rules_31):
-    p_len = len(list(rule_42_combinations)[0])
+def good_message_part2(message, first_part_rules, second_part_rules):
+    p_len = len(list(first_part_rules)[0])
     min_len = 3 * p_len
 
     good = True
 
     if len(message) < min_len or len(message) % p_len != 0:
         good = False
-    elif message[-p_len:] not in rules_31:
+    elif message[-p_len:] not in second_part_rules:
         good = False
-    elif message[0:p_len] not in rules_42 or message[p_len: 2 * p_len] not in rules_42:
+    elif message[0:p_len] not in first_part_rules or message[p_len: 2 * p_len] not in first_part_rules:
         good = False
 
     i = 0
@@ -143,8 +128,8 @@ def good_message(message, rules_42, rules_31):
     second_part_count = 0
     while i <= len(message) - p_len:
         part = message[i: i + p_len]
-        first_part_match = part in rules_42
-        second_part_match = part in rules_31
+        first_part_match = part in first_part_rules
+        second_part_match = part in second_part_rules
 
         if not first_part_match and second_part_match:
             first_part = False
@@ -165,21 +150,19 @@ def good_message(message, rules_42, rules_31):
     return good
 
 
-def good_message2(message, rules_42, rules_31):
-    p_len = len(list(rule_42_combinations)[0])
+first_part = '42'
+second_part = '31'
 
-    if len(message) != 3 * p_len:
-        return False
+first_part_combinations = set()
+second_part_combinations = set()
 
-    start = message[:p_len]
-    middle = message[p_len: 2 * p_len]
-    end = message[2 * p_len: 3 * p_len]
+for rule in generate_rules(rules, first_part):
+    for n in rule.split('|'):
+        first_part_combinations.add(n)
 
-    return start in rules_42 and middle in rules_42 and end in rules_31
+for rule in generate_rules(rules, second_part):
+    for n in rule.split('|'):
+        second_part_combinations.add(n)
 
-
-counter = 0
-for message in messages:
-    if good_message(message, rule_42_combinations, rule_31_combinations): counter += 1
-
-print(counter)
+print('Part One Solution: ', find_solution1(messages, first_part_combinations, second_part_combinations))
+print('Part Two Solution: ', find_solution2(messages, first_part_combinations, second_part_combinations))
