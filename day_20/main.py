@@ -95,7 +95,7 @@ def tile_combinations(tiles):
                 tile = flip_horizontally(flip_vertically(tiles[key]))
             else:
                 tile = tiles[key]
-            for j in range(4):
+            for j in range(2):
                 id = '{}|{}|{}'.format(key, i, j)
                 tile = rotate_2d_array(tile)
                 combinations[id] = tile
