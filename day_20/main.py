@@ -1,6 +1,6 @@
 tiles = {}
 
-with open('test_inputs.txt') as f:
+with open('puzzle_inputs.txt') as f:
     tile_id = None
     tile = []
 
@@ -41,6 +41,30 @@ def print_tile(tile):
     for line in tile:
         print(line)
     print('\n')
+
+
+def print_grid(grid):
+    for arr in grid:
+        for t in arr:
+            id = '________' if t is None else t
+            print(id, end=' ')
+        print()
+
+
+def print_image(image):
+    for arr in image:
+        for c in arr:
+            print(c + '  ', end='')
+        print()
+
+
+def count_occurences(symbol, image):
+    count = 0
+    for arr in image:
+        for c in arr:
+            if c == symbol:
+                count += 1
+    return count
 
 
 def match_top(tile1, tile2):
@@ -106,8 +130,8 @@ def find_matches(combinations):
     return matches
 
 
-def find_solution1(tiles):
-    ids = set()
+def find_corners(tiles):
+    corners = set()
     combinations = tile_combinations(tiles)
     matches = find_matches(combinations)
 
@@ -118,10 +142,46 @@ def find_solution1(tiles):
         match_left = 1 if len(value['left']) > 0 else 0
 
         if match_top + match_right + match_bottom + match_left == 2:
-            ids.add(key)
+            corners.add(key)
 
+    return corners, matches, combinations
+
+
+def fill_image(image, combinations, grid):
+    for i in range(len(image)):
+        line = []
+        for j in range(len(grid)):
+            line += combinations[grid[i // 8][j]][i % 8 + 1][1:9]
+        image[i] = line
+
+
+def find_monster(start_coords, monster, image):
+    for k in range(4):
+        if k == 0:
+            m = monster
+        elif k == 1:
+            m = flip_vertically(monster)
+        elif k == 2:
+            m = flip_horizontally(monster)
+        else:
+            m = flip_vertically(flip_horizontally(monster))
+
+        match = True
+        for i in range(len(monster)):
+            for j in range(len(monster[0])):
+
+                if m[i][j] == 'O' and image[start_coords[0] + i][start_coords[1] + j] != '#':
+                    match = False
+
+        if match:
+            return True
+
+    return False
+
+
+def find_solution1(corners):
     filtered_ids = set()
-    for id in ids:
+    for id in corners:
         filtered_ids.add(int(id.split('|')[0]))
 
     answer = 1
@@ -131,47 +191,47 @@ def find_solution1(tiles):
     return answer
 
 
-# print('Part One Solution:', find_solution1(tiles))
+def find_solution2(corners, matches, combinations, tiles):
+    grid_size = int(len(tiles) ** 0.5)
+
+    grid = [[None for _ in range(grid_size)] for _ in range(grid_size)]
+
+    for id in corners:
+        m = matches[id]
+
+        top_left = len(m['right']) > 0 and len(m['bottom']) > 0
+        if top_left:
+            grid[0][0] = id
+
+    for i in range(1, grid_size):
+        grid[i][0] = list(matches[grid[i - 1][0]]['bottom'])[0]
+
+    for i in range(grid_size):
+        for j in range(1, grid_size):
+            grid[i][j] = list(matches[grid[i][j - 1]]['right'])[0]
+
+    image_size = 8 * grid_size
+    image = [['x' for _ in range(image_size)] for _ in range(image_size)]
+    fill_image(image, combinations, grid)
+
+    sea_monster = [
+        ['.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', 'O', '.'],
+        ['O', '.', '.', '.', '.', 'O', 'O', '.', '.', '.', '.', 'O', 'O', '.', '.', '.', '.', 'O', 'O', 'O'],
+        [',', 'O', '.', '.', 'O', '.', '.', 'O', '.', '.', 'O', '.', '.', 'O', '.', '.', 'O', '.', '.', '.'],
+    ]
+
+    count = 0
+    for _ in range(2):
+        sea_monster = rotate_2d_array(sea_monster)
+        for i in range(0, image_size - len(sea_monster) + 1):
+            for j in range(0, image_size - len(sea_monster[0]) + 1):
+                if find_monster((i, j), sea_monster, image):
+                    count += 1
+
+    return count_occurences('#', image) - count * count_occurences('O', sea_monster)
 
 
-def find(ids, id):
-    found = []
+corners, matches, combinations = find_corners(tiles)
 
-    for key, matches in ids.items():
-        if str(id) in key:
-            found.append(matches)
-    return found
-
-
-ids = set()
-combinations = tile_combinations(tiles)
-matches = find_matches(combinations)
-
-for key, value in matches.items():
-    match_top = 1 if len(value['top']) > 0 else 0
-    match_right = 1 if len(value['right']) > 0 else 0
-    match_bottom = 1 if len(value['bottom']) > 0 else 0
-    match_left = 1 if len(value['left']) > 0 else 0
-
-    if match_top + match_right + match_bottom + match_left == 2:
-        ids.add(key)
-
-filtered_ids = set()
-for id in ids:
-    filtered_ids.add(int(id.split('|')[0]))
-
-for id in filtered_ids:
-    print('id')
-    for x in find(matches, id):
-        z = []
-        if len(x['top']) > 0:
-            z.append('top')
-        if len(x['right']) > 0:
-            z.append('right')
-        if len(x['bottom']) > 0:
-            z.append('bottom')
-        if len(x['left']) > 0:
-            z.append('left')
-        print(z)
-
-answer = 1
+print('Part One Solution:', find_solution1(corners))
+print('Part Two Solution:', find_solution2(corners, matches, combinations, tiles))
