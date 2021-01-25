@@ -4,23 +4,12 @@ with open('puzzle_inputs.txt') as f:
         bucket = [int(number) for number in line]
 
 
-def get_pick_up(current_cup, bucket):
-    indx = bucket.index(current_cup)
-    if indx + 4 < len(bucket):
-        pick_up = bucket[indx + 1: indx + 4]
-    elif indx == len(bucket) - 1:
-        pick_up = bucket[0: 3]
-    else:
-        pick_up = bucket[indx + 1: indx + 4] + bucket[0: indx + 4 - len(bucket)]
-    return pick_up
-
-
-def get_destination(current_cup, pick_up):
+def get_destination(current_cup, pick_up, highest_value):
     destination = current_cup - 1
 
     while True:
         if destination < 1:
-            destination = 9
+            destination = highest_value
 
         if destination not in pick_up and destination != current_cup:
             return destination
@@ -28,43 +17,76 @@ def get_destination(current_cup, pick_up):
             destination -= 1
 
 
-def format_answer(bucket):
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.next = None
+
+
+def simulate(cups, rounds):
+    nodes = {}
+
+    current_node = None
+    first_node = None
+    highest_value = 0
+
+    for number in cups:
+        if number > highest_value:
+            highest_value = number
+
+        node = Node(number)
+
+        if current_node is None:
+            current_node = node
+            first_node = current_node
+        else:
+            current_node.next = node
+            current_node = node
+
+        nodes[number] = node
+
+    current_node.next = first_node
+    current_node = first_node
+
+    for _ in range(rounds):
+        next_node = current_node.next
+        pick_up = [next_node.value, next_node.next.value, next_node.next.next.value]
+
+        destination = nodes[get_destination(current_node.value, pick_up, highest_value)]
+
+        current_node.next = next_node.next.next.next
+        next_node.next.next.next = destination.next
+        destination.next = next_node
+
+        current_node = current_node.next
+
+    return nodes
+
+
+def find_solution1(bucket):
+    nodes = simulate([number for number in bucket], 100)
+
     answer = ''
-    i = bucket.index(1) + 1
+    node = nodes[1].next
 
-    while len(answer) < 8:
-        if i >= len(bucket):
-            i = 0
+    for _ in range(8):
+        answer += str(node.value)
+        node = node.next
+    return answer
 
-        answer += str(bucket[i])
 
-        i += 1
+def find_solution2(bucket):
+    nodes = simulate([number for number in bucket] + list(range(10, 1_000_001)), 10_000_000)
+
+    answer = 1
+    node = nodes[1]
+
+    for _ in range(3):
+        answer *= node.value
+        node = node.next
 
     return answer
 
 
-def find_solution1(bucket):
-    current_cup = bucket[0]
-    for i in range(100):
-
-        pick_up = get_pick_up(current_cup, bucket)
-        destination = get_destination(current_cup, pick_up)
-
-        for number in pick_up:
-            bucket.remove(number)
-
-        indx = bucket.index(destination)
-
-        for j in range(3):
-            bucket.insert(indx + 1, pick_up[2 - j])
-
-        indx = bucket.index(current_cup) + 1
-        if indx == len(bucket):
-            indx = 0
-
-        current_cup = bucket[indx]
-
-    return format_answer(bucket)
-
-
-print('Part One Solution: ', find_solution1(bucket))
+print('Part One Solution: ', find_solution1([number for number in bucket]))
+print('Part Two Solution: ', find_solution2([number for number in bucket]))
